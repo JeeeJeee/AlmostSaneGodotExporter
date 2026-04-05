@@ -2,7 +2,6 @@ import mathutils
 import os
 import bpy
 from .. import sge_statics
-from ..collisions import collision_utils
 
 def ApplyExportTransform(obj):
 
@@ -25,15 +24,14 @@ def ApplyExportTransform(obj):
         mat_rot = mathutils.Matrix.Rotation(0, 4, 'X')
         newMatrix = mat_trans @ mat_rot
 
-    eul = obj.AdditionalRotationForExport
-    loc = obj.AdditionalLocationForExport
-
-    mat_rot = eul.to_matrix()
-    mat_loc = mathutils.Matrix.Translation(loc)
-    AddMat = mat_loc @ mat_rot.to_4x4()
-
-    obj.matrix_world = newMatrix @ AddMat
+    obj.matrix_world = newMatrix
     obj.scale = saveScale
+
+def ApplyBoxCollider(collider_obj:bpy.types.Object):
+    with bpy.context.temp_override(selected_objects=[collider_obj], active_object=collider_obj):
+        bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    
 
 def HasRelativeExportPaths(objects, context: bpy.types.Context):
     def is_relative(path: str):
@@ -149,15 +147,20 @@ def prepare_meshes(objs: list[bpy.types.Object]):
     # Find roots (objects without parent OR parent not in selection)
     obj_set = set(objs)
     roots = [obj for obj in objs if obj.parent not in obj_set]
-
-    # for obj in obj_set:
-    #     obj.hide_viewport = False
+    colliders = [
+        obj for obj in objs
+        if obj.get(sge_statics.SGE_COLLISION_IS_BOX_COLLIDER, False)
+    ] 
 
     # Apply export transform only to roots
     for obj in roots:
         ApplyExportTransform(obj)
+
+    for col in colliders:
+        ApplyBoxCollider(col)
     
     # TODO: gotta set pivot to center and apply scale for box collisions aparently?
+    
 
 
 def export_mesh_with_children(filepath):
