@@ -8,7 +8,7 @@ maintainer = "JeeeJeee"
 type = "add-on"
 
 # # Optional: link to documentation, support, source files, etc
-# website = "https://extensions.blender.org/add-ons/my-example-package/"
+website = "https://github.com/JeeeJeee/AlmostSaneGodotExporter/tree/master"
 
 # # Optional: tag list defined by Blender and server, see:
 # # https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
@@ -24,14 +24,3 @@ blender_version_min = "4.4.0"
 license = [
   "SPDX:GPL-3.0-or-later",
 ]
-
-# # Optional: advanced build settings.
-# # https://docs.blender.org/manual/en/dev/advanced/extensions/command_line_arguments.html#command-line-args-extension-build
-# [build]
-# # These are the default build excluded patterns.
-# # You only need to edit them if you want different options.
-# paths_exclude_pattern = [
-#   "__pycache__/",
-#   "/.git/",
-#   "/*.zip",
-# ]
