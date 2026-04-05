@@ -1,7 +1,7 @@
 Almost Sane Godot Exporter
 ---
 I have found Godots 3D workflow to be extremely painful to work with, so I've spent some time making this addon.  
-Todo: add the link to the godot import addon  
+This addon requires its [godot importer counterpart](https://github.com/JeeeJeee/AlmostSaneGodotImporter) to get any real use out of it. *Though exporting itself still works*  
 The project is a slimmed down version of [blender-for-unrealengine](https://github.com/xavier150/Blender-For-UnrealEngine-Addons/) modified specifically for Godot.
 
 ### Features
