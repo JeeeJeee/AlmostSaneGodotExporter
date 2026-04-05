@@ -157,10 +157,7 @@ def prepare_meshes(objs: list[bpy.types.Object]):
         ApplyExportTransform(obj)
 
     for col in colliders:
-        ApplyBoxCollider(col)
-    
-    # TODO: gotta set pivot to center and apply scale for box collisions aparently?
-    
+        ApplyBoxCollider(col)    
 
 
 def export_mesh_with_children(filepath):
