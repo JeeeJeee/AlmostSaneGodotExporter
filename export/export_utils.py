@@ -182,7 +182,10 @@ def export_mesh_with_children(filepath):
         export_apply=True,
         export_format=exportFormatString,
         export_animations=False,
-        export_extras=True
+        export_extras=True,
+        export_image_format='NONE',
+        export_materials='EXPORT',
+
     )
 
     ctx.cleanup()
