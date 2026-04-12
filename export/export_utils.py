@@ -27,11 +27,23 @@ def ApplyExportTransform(obj):
     obj.matrix_world = newMatrix
     obj.scale = saveScale
 
-def ApplyBoxCollider(collider_obj:bpy.types.Object):
-    with bpy.context.temp_override(selected_objects=[collider_obj], active_object=collider_obj):
-        bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
-        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    
+def get_bounds_center(obj):
+    local_bbox = [mathutils.Vector(corner) for corner in obj.bound_box]
+    center = sum(local_bbox, mathutils.Vector()) / 8.0
+    return obj.matrix_world @ center
+
+def set_origin(obj, new_origin_world):
+    # Convert world → local
+    new_origin_local = obj.matrix_world.inverted() @ new_origin_world
+
+    # Move mesh data
+    mat = mathutils.Matrix.Translation(-new_origin_local)
+    obj.data.transform(mat)
+    obj.data.update()
+
+    # Move object
+    obj.matrix_world.translation = new_origin_world
+
 
 def HasRelativeExportPaths(objects, context: bpy.types.Context):
     def is_relative(path: str):
@@ -147,7 +159,7 @@ def prepare_meshes(objs: list[bpy.types.Object]):
     # Find roots (objects without parent OR parent not in selection)
     obj_set = set(objs)
     roots = [obj for obj in objs if obj.parent not in obj_set]
-    colliders = [
+    boxColliders = [
         obj for obj in objs
         if obj.get(sge_statics.SGE_COLLISION_IS_BOX_COLLIDER, False)
     ] 
@@ -156,14 +168,51 @@ def prepare_meshes(objs: list[bpy.types.Object]):
     for obj in roots:
         ApplyExportTransform(obj)
 
-    for col in colliders:
-        ApplyBoxCollider(col)    
+    # Update origin of box colliders
+    for col in boxColliders:
+        if col:
+            set_origin(col, get_bounds_center(col))
+
+# works on the current selection and restores it after its done
+def apply_modifiers():
+    view_layer = bpy.context.view_layer
+
+    # Store selection + active object
+    selected = [obj for obj in view_layer.objects if obj.select_get()]
+    active = view_layer.objects.active
+
+    if bpy.ops.object.mode_set.poll():
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+    for obj in selected:
+        if obj.type != 'MESH':
+            continue
+
+        view_layer.objects.active = obj
+
+        for mod in obj.modifiers:
+            try:
+                bpy.ops.object.modifier_apply(modifier=mod.name)
+            except RuntimeError:
+                pass
+
+    for obj in view_layer.objects:
+        obj.select_set(False)
+
+    for obj in selected:
+        obj.select_set(True)
+
+    view_layer.objects.active = active
 
 
 def export_mesh_with_children(filepath):
     ctx = ExportContext()
 
+    # Will also select the newly duplicated meshes
     ctx.duplicate_meshes()
+    apply_modifiers()
+    # Apply scale transform SUPER IMPORTANT or shit gets weird really fast
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     prepare_meshes(ctx.duplicates)
 
     # get export format

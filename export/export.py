@@ -225,7 +225,7 @@ class SGE_PT_ExportPanel(bpy.types.Panel):
 
             original_user_selection = bpy.context.selected_objects
             original_active_user_selection = bpy.context.view_layer.objects.active
-            original_visibility_map = {}
+            original_visibility_map = {} # {obj: (hide_viewport, hide_set)}
 
             numExported = 0
             for export_obj in obj_list:
@@ -237,18 +237,24 @@ class SGE_PT_ExportPanel(bpy.types.Panel):
 
                 for child in export_utils.GetExportChildren(export_obj):
                     # can't select objects if they are hidden aparently so we save their original visiblity and restore it after
-                    original_visibility_map[child] = child.hide_viewport
+                    original_visibility_map[child] = child.hide_viewport, child.hide_get()
                     child.hide_viewport = False
+                    child.hide_set(False)
                     child.select_set(True)
 
-                original_visibility_map[export_obj] = export_obj.hide_viewport
+                # set selection and visibility of roots
+                original_visibility_map[export_obj] = export_obj.hide_viewport, export_obj.hide_get()
                 export_obj.hide_viewport = False
+                export_obj.hide_set(False)
                 export_obj.select_set(True)
+
+                # export
                 export_utils.export_mesh_with_children(fullPath)
 
-                # restore original visibility 
-                for obj, was_hidden in original_visibility_map.items():
-                    obj.hide_viewport = was_hidden
+                # restore original visibility
+                for obj, (hide_viewport, hide_set) in original_visibility_map.items():
+                    obj.hide_viewport = hide_viewport
+                    obj.hide_set(hide_set)
 
                 numExported += 1
 
