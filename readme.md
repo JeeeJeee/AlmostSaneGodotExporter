@@ -4,6 +4,9 @@ I have found Godots 3D workflow to be extremely painful to work with, so I've sp
 This addon requires its [godot importer counterpart](https://github.com/JeeeJeee/AlmostSaneGodotImporter) to get any real use out of it. *Though exporting itself still works*  
 The project is a slimmed down version of [blender-for-unrealengine](https://github.com/xavier150/Blender-For-UnrealEngine-Addons/) modified specifically for Godot.
 
+#### Tested with Blender version:
+4.4 
+
 ### Features
 *This addon is focused on meshes. No effort was made to support animations/actions etc.*
 - Exporting multiple separate .glb files from a single .blend file
